@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             name.setOnClickListener(this);
             name.setTag(sensor);
 
-            addField("\tTYPE: " + sensor.getStringType());
+            addField("\tTYPE: " + sensor.getStringType() + " (" + sensor.getType() + ")");
             float range = sensor.getMaximumRange();
             addField("\tMaximum range: " + range);
             addField("\tResolution: " + sensor.getResolution());

@@ -12,9 +12,15 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
 public class SensorStats extends AppCompatActivity implements SensorEventListener {
     private SensorManager mSensorManager;
     private Sensor mSensor;
+
+    private static final int SAMSUNG_MOTION = 65559;
+    private static final int SAMSUNG_GRIP_WIFI = 65575;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +45,7 @@ public class SensorStats extends AppCompatActivity implements SensorEventListene
             return;
         }
 
-        Toast.makeText(this, "Listening for " + stringType, Toast.LENGTH_SHORT);
+        Toast.makeText(this, "Listening for " + stringType, Toast.LENGTH_SHORT).show();
     }
 
     private void errorOut(String msg) {
@@ -55,6 +61,15 @@ public class SensorStats extends AppCompatActivity implements SensorEventListene
                             + "y: " + sensorEvent.values[1]
                             + "z: " + sensorEvent.values[2];
                 Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+                break;
+            }
+            case SAMSUNG_MOTION: {
+                Toast.makeText(this, "Motion: " + Arrays.toString(sensorEvent.values), Toast.LENGTH_LONG).show();
+                log("Saw some motion: " + Arrays.toString(sensorEvent.values));
+                break;
+            }
+            case SAMSUNG_GRIP_WIFI: {
+                Toast.makeText(this, "Grip: " + Arrays.toString(sensorEvent.values), Toast.LENGTH_LONG).show();
                 break;
             }
             default:
@@ -78,7 +93,7 @@ public class SensorStats extends AppCompatActivity implements SensorEventListene
     protected void onResume() {
         super.onResume();
         if (mSensor != null) {
-            mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            mSensorManager.registerListener(this, mSensor, 1000000);
         }
     }
 
