@@ -9,18 +9,14 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     static final String SENSOR_NAME = "sensor";
     static final String SENSOR_TYPE = "sensor_type";
     static final String SENSOR_STRING_TYPE = "sensor_string_type";
@@ -31,77 +27,43 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ListView list = findViewById(R.id.list);
-        list.setAdapter(new SensorAdapter());
-        list.setOnItemClickListener(this);
+
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+
+        mLayout = findViewById(R.id.linear);
+        for (Sensor sensor : sensors) {
+            TextView name = addField(sensor.getName());
+            name.setOnClickListener(this);
+            name.setTag(sensor);
+
+            addField("\tTYPE: " + sensor.getStringType() + " (" + sensor.getType() + ")");
+            float range = sensor.getMaximumRange();
+            addField("\tMaximum range: " + range);
+            addField("\tResolution: " + sensor.getResolution());
+            addField("\tMin Delay: " + sensor.getMinDelay());
+            addField("\tPower: " + sensor.getPower());
+            addField("\tVendor: " + sensor.getVendor());
+            addField("\tVersion: " + sensor.getVersion());
+            addField("\tIsWakeUp: " + sensor.isWakeUpSensor());
+        }
     }
 
-    private class SensorAdapter extends BaseAdapter {
-        List<Sensor> mSensors;
-        public SensorAdapter() {
-            SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-            mSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return i;
-        }
-
-        @Override
-        public Object getItem(int i) {
-            return mSensors.get(i);
-        }
-
-        @Override
-        public View getView(int i, View view, ViewGroup viewGroup) {
-            if (view == null) {
-                view = getLayoutInflater().inflate(R.layout.sensor_item, viewGroup, false);
-            }
-            Sensor sensor = mSensors.get(i);
-            TextView textView = view.findViewById(R.id.name);
-            textView.setText(sensor.getName());
-
-            textView = view.findViewById(R.id.type);
-            textView.setText("\tTYPE: " + sensor.getStringType() + " (" + sensor.getType() + ")");
-
-            textView = view.findViewById(R.id.range);
-            float range = sensor.getMaximumRange();
-            textView.setText("\tMaximum range: " + range);
-
-            textView = view.findViewById(R.id.resolution);
-            textView.setText("\tResolution: " + sensor.getResolution());
-
-            textView = view.findViewById(R.id.delay);
-            textView.setText("\tMin Delay: " + sensor.getMinDelay());
-
-            textView = view.findViewById(R.id.power);
-            textView.setText("\tPower: " + sensor.getPower());
-
-            textView = view.findViewById(R.id.vendor);
-            textView.setText("\tVendor: " + sensor.getVendor());
-
-            textView = view.findViewById(R.id.version);
-            textView.setText("\tVersion: " + sensor.getVersion());
-
-            textView = view.findViewById(R.id.is_wake_up);
-            textView.setText("\tIsWakeUp: " + sensor.isWakeUpSensor());
-
-            return view;
-        }
-
-        @Override
-        public int getCount() {
-            return mSensors.size();
-        }
+    private TextView addField(String text) {
+        TextView textView = new TextView(this);
+        textView.setText(text);
+        mLayout.addView(textView);
+        return textView;
     }
 
     @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        Sensor sensor = (Sensor) adapterView.getAdapter().getItem(i);
+    public void onClick(View view) {
+        TextView textView = (TextView) view;
+        String name = textView.getText().toString();
+        Sensor sensor = (Sensor) textView.getTag();
 
         Intent intent = new Intent(this, SensorStats.class);
-        intent.putExtra(SENSOR_NAME, sensor.getName());
+        intent.putExtra(SENSOR_NAME, name);
         intent.putExtra(SENSOR_TYPE, sensor.getType());
         intent.putExtra(SENSOR_STRING_TYPE, sensor.getStringType());
 
